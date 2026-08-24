@@ -136,10 +136,10 @@ export default function ChatApp() {
       <header className="h-16 border-b border-[var(--color-apple-border)] flex items-center justify-between px-4 sm:px-6 bg-[var(--color-apple-bg)]/80 backdrop-blur-xl sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
           <div className="w-15 h-15 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 bg-transparent group-hover:scale-105 transition-transform">
-            <img src="/logo.png" alt="DevMind Logo" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="DevGrasp Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-lg sm:text-xl font-bold text-[var(--color-apple-text)] tracking-tight hidden sm:block group-hover:text-[var(--color-apple-blue)] transition-colors">
-            DevMind
+            DevGrasp
           </h1>
         </Link>
         
@@ -273,7 +273,7 @@ export default function ChatApp() {
           <div className="max-w-[780px] mx-auto w-full flex flex-col gap-4 min-h-full">
             {messages.length === 0 && (
               <div className="flex-1 flex flex-col items-start justify-center max-w-2xl mx-auto space-y-6 min-h-[60vh] px-4">
-                <h2 className="text-2xl font-bold text-[var(--color-apple-text)] tracking-tight">Welcome to DevMind</h2>
+                <h2 className="text-2xl font-bold text-[var(--color-apple-text)] tracking-tight">Welcome to DevGrasp</h2>
                 <div className="space-y-4 text-[13px] sm:text-sm text-[var(--color-apple-text)]/70 font-medium">
                   <p>A contextual coding environment connected directly to your repositories.</p>
                   <div className="mt-6">
@@ -391,7 +391,7 @@ export default function ChatApp() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading || !selectedRepo}
-                placeholder={!selectedRepo ? 'Select a workspace to start chatting...' : isListening ? 'Listening...' : 'Message DevMind...'}
+                placeholder={!selectedRepo ? 'Select a workspace to start chatting...' : isListening ? 'Listening...' : 'Message DevGrasp...'}
                 className="flex-1 bg-transparent py-3.5 px-2 focus:outline-none text-[var(--color-apple-text)] placeholder-[var(--color-apple-text)]/50 text-sm font-medium"
               />
             )}
@@ -411,7 +411,7 @@ export default function ChatApp() {
           </form>
           
           <div className="text-center mt-1 text-[10px] text-zinc-500 pointer-events-auto">
-            DevMind can make mistakes. Please verify important code.
+            DevGrasp can make mistakes. Please verify important code.
           </div>
         </div>
       </main>

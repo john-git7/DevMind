@@ -19,7 +19,7 @@ export async function retrieveContext(query: string, repoUrl: string | null = nu
     }
 
     // Perform vector search in MongoDB Atlas with native pre-filtering by repoUrl.
-    const indexName = isLocal ? 'LocalMiniLM' : 'Devmind';
+    const indexName = isLocal ? 'LocalMiniLM' : 'DevGrasp';
     const pipeline: any[] = [
       {
         $vectorSearch: {
