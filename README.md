@@ -1,302 +1,163 @@
-# DevGrasp 
+# DevMind 🧠
 
-> An AI-powered developer productivity suite — ask your codebase questions, get automated PR reviews, convert screenshots to code, and speak to your repos.
-
----
-
-## What is DevGrasp?
-
-DevGrasp is a full-stack MERN application that indexes any GitHub repository and gives you an AI-powered interface to interact with it. Connect a repo and you get:
-
-- **Codebase chat** — ask natural language questions, get answers with exact file citations
-- **Automated PR reviews** — AI reviews every pull request and posts structured comments directly to GitHub
-- **Screenshot to code** — drag a UI screenshot, get production-ready React + Tailwind code
-- **Voice input** — speak your question, get an answer from your codebase
+> **AI-Powered Codebase Intelligence & Developer Assistant** — Ask questions about complex repositories, trace bugs with AST context, review pull requests, and explore codebases with grounded AI citations.
 
 ---
 
+## 🚀 Overview
 
+**DevMind** is a production-grade full-stack application built with TypeScript, React 18, Express, MongoDB Atlas Vector Search, and Google Gemini. It parses, indexes, and understands GitHub repositories to provide:
 
-## Tech Stack
-
-**Frontend**
-- React 18 + Vite
-- Tailwind CSS
-- Monaco Editor (`@monaco-editor/react`)
-- Web Speech API (native browser)
-
-**Backend**
-- Node.js + Express.js
-- Server-Sent Events (SSE) for streaming
-- JWT authentication
-- express-rate-limit
-
-**Database**
-- MongoDB Atlas (M0 free tier)
-- MongoDB Atlas Vector Search
-
-**AI / ML**
-- Google Gemini 1.5 Flash — LLM + vision
-- Gemini `text-embedding-004` — embeddings
-- Groq Whisper large-v3 — speech to text (fallback)
-- Web Speech API — browser-native STT
-
-**Integrations**
-- GitHub REST API via Octokit
-- GitHub Webhooks
-
-**Deployment**
-- Vercel (frontend)
-- Render.com (backend)
+- 💬 **Codebase Chat with SSE Streaming**: Low-latency token-by-token streaming responses grounded in your repository's AST-extracted code chunks.
+- 🐛 **Bug Trace & Root-Cause Analysis**: Deep semantic search across function scopes and dependencies to pinpoint regressions.
+- 🔍 **Automated PR Reviews**: Summarizes code diffs, highlights breaking changes, and suggests production improvements.
+- 🎙️ **Voice-Enabled Interface**: Ask codebase questions using browser-native SpeechRecognition.
+- 🛡️ **End-to-End Type Safety & Observability**: Strict Zod schema validation, Sentry profiling, Morgan logging, and full Jest/Supertest test coverage.
 
 ---
 
-## Architecture
+## 🛠️ Architecture & Tech Stack
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  React Frontend                      │
-│   Chat UI · Code Editor · Voice · File Upload        │
-└──────────────────────┬──────────────────────────────┘
-                       │ HTTP / SSE
-┌──────────────────────▼──────────────────────────────┐
-│              Express.js API Gateway                  │
-│        Auth · Rate Limiting · Routing                │
-└──────┬───────────┬──────────┬───────────┬───────────┘
-       │           │          │           │
-  ┌────▼────┐ ┌────▼────┐ ┌──▼──────┐ ┌──▼──────┐
-  │ Indexer │ │RAG Chat │ │PR Agent │ │ Vision  │
-  │         │ │         │ │         │ │ + Voice │
-  └────┬────┘ └────┬────┘ └──┬──────┘ └──┬──────┘
-       │           │          │           │
-┌──────▼───────────▼──┐  ┌───▼──────┐ ┌──▼──────────┐
-│   MongoDB Atlas     │  │  GitHub  │ │Gemini Vision│
-│   + Vector Search   │  │  API     │ │+ Whisper    │
-└─────────────────────┘  └──────────┘ └─────────────┘
-                    ▲
-         ┌──────────┴──────────┐
-         │   Gemini 1.5 Flash  │
-         │   + Embeddings API  │
-         └─────────────────────┘
+┌───────────────────────────────────────────────────────────┐
+│              React 18 + TypeScript + Tailwind CSS         │
+│     Chat UI · Apple-Themed Modals · SSE Stream Handler    │
+└─────────────────────────────┬─────────────────────────────┘
+                              │ HTTP / SSE (EventStream)
+┌─────────────────────────────▼─────────────────────────────┐
+│                 Express.js + TypeScript API               │
+│     Zod Validation · Morgan Logging · Sentry Profiling    │
+└──────────────┬──────────────┬──────────────┬──────────────┘
+               │              │              │
+        ┌──────▼──────┐ ┌─────▼─────┐ ┌──────▼──────┐
+        │ Auth Module │ │  Indexer  │ │  RAG Chat   │
+        │  JWT + Bcr  │ │AST + Chunks││Retriever+SSE│
+        └──────┬──────┘ └─────┬─────┘ └──────┬──────┘
+               │              │              │
+┌──────────────▼──────────────▼──────────────▼──────────────┐
+│                    MongoDB Atlas Cluster                  │
+│       Users · Chunks Collection · $vectorSearch Index     │
+└─────────────────────────────┬─────────────────────────────┘
+                              │
+               ┌──────────────┴──────────────┐
+               │    Google Gemini API /      │
+               │  Local MiniLM Transformers  │
+               └─────────────────────────────┘
 ```
 
-### How RAG works in DevGrasp
-
-```
-User question
-     │
-     ▼
-Embed question        ← Gemini text-embedding-004
-     │
-     ▼
-Vector search         ← MongoDB $vectorSearch (cosine similarity)
-     │
-     ▼
-Top 5 relevant        ← code chunks with file + line metadata
-code chunks
-     │
-     ▼
-Build prompt          ← inject chunks as context
-     │
-     ▼
-Gemini generates      ← grounded answer, no hallucination
-answer
-     │
-     ▼
-Stream via SSE        ← token-by-token to React frontend
-```
+### Core Technologies
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons, Monaco Editor support.
+- **Backend**: Node.js, Express, TypeScript, Zod, Morgan, Sentry (`@sentry/node`), `@xenova/transformers`.
+- **Database**: MongoDB Atlas with Vector Search (`$vectorSearch` cosine similarity).
+- **AI Models**: Google Gemini 2.0 / 1.5 Flash, Gemini Embeddings, Xenova/all-MiniLM-L6-v2 (Local Embedder).
+- **Testing**: Jest, Supertest, MongoMemoryServer, Babel TypeScript preset.
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-devgrasp/
-├── client/                     # React frontend
+DevMind/
+├── client/                     # React 18 + TypeScript frontend
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatMessage.jsx     # Single message bubble
-│   │   │   ├── CitationBadge.jsx   # File reference tag
-│   │   │   ├── RepoInput.jsx       # GitHub URL input + connect
-│   │   │   ├── VoiceInput.jsx      # Mic button + Web Speech
-│   │   │   └── ScreenshotUpload.jsx # Drag-drop + preview
-│   │   ├── App.jsx
-│   │   └── main.jsx
+│   │   ├── components/         # ChatMessage, RepoModal, FileViewerModal, SettingsModal
+│   │   ├── context/            # AuthContext (JWT session state)
+│   │   ├── hooks/              # Custom domain hooks (useChat, useRepos, useVoice, etc.)
+│   │   ├── pages/              # ChatApp, Home, Login, Signup
+│   │   └── utils/              # SSE Stream consumer (streamSSE.ts)
 │   └── package.json
 │
-└── server/                     # Express backend
-    ├── models/
-    │   ├── User.js                 # JWT auth schema
-    │   └── Chunk.js                # Code chunk + embedding schema
-    ├── routes/
-    │   ├── auth.js                 # register / login
-    │   ├── repos.js                # index a repo
-    │   ├── chat.js                 # RAG chat endpoint
-    │   ├── vision.js               # screenshot → code
-    │   └── webhook.js              # GitHub PR events
-    ├── services/
-    │   ├── indexer.js              # clone → chunk → embed → save
-    │   ├── retriever.js            # embed query → $vectorSearch
-    │   └── rag.js                  # retriever + Gemini pipeline
-    ├── middleware/
-    │   └── auth.js                 # JWT verification
-    ├── index.js                    # app entry point
-    └── package.json
+├── server/                     # Express + TypeScript backend
+│   ├── controllers/            # authController, repoController, chatController
+│   ├── middleware/             # requireApiKey auth, Zod validation, error handlers
+│   ├── models/                 # Mongoose models: User, Chunk, RepoStatus, Conversation
+│   ├── routes/                 # Express routers (/api/auth, /api/repos, /api/chat)
+│   ├── schemas/                # Zod request validation schemas
+│   ├── services/               # indexer.ts, retriever.ts, promptBuilder.ts, usageTracker.ts
+│   ├── tests/                  # Jest + Supertest test suite
+│   ├── index.ts                # Server entry point & rate limiting configuration
+│   └── package.json
+│
+├── CONTRIBUTING.md             # Developer guidelines & workflow
+├── LICENSE                     # MIT License
+└── README.md
 ```
 
 ---
 
-## Getting Started
+## ⚡ Quick Start
 
-### Prerequisites
-
-- Node.js 18+
-- A [Google AI Studio](https://aistudio.google.com) account (free API key)
-- A [MongoDB Atlas](https://mongodb.com/atlas) account (free M0 cluster)
-- A [GitHub](https://github.com) account
-
-### 1. Clone the repo
-
+### 1. Clone & Configure
 ```bash
-git clone https://github.com/yourusername/devgrasp.git
-cd devgrasp
+git clone https://github.com/john-git7/DevMind.git
+cd DevMind
 ```
 
-### 2. Set up the backend
-
+### 2. Backend Setup
 ```bash
 cd server
 npm install
+cp .env.example .env
 ```
+Fill in the required `.env` values (`MONGO_URI`, `GEMINI_KEY`, `JWT_SECRET`, `CLIENT_URL`).
 
-Create `server/.env`:
-
-```env
-PORT=5000
-MONGODB_URI=your_mongodb_atlas_connection_string
-JWT_SECRET=your_jwt_secret_key_here
-GEMINI_API_KEY=your_google_ai_studio_api_key
-GITHUB_WEBHOOK_SECRET=your_webhook_secret
-```
-
-Start the server:
-
+### 3. Frontend Setup
 ```bash
-npm run dev
-```
-
-### 3. Set up the frontend
-
-```bash
-cd client
+cd ../client
 npm install
+cp .env.example .env
 ```
 
-Create `client/.env`:
-
-```env
-VITE_API_URL=http://localhost:5000
-```
-
-Start the client:
-
+### 4. Run Locally
 ```bash
+# Start backend (from server/)
 npm run dev
 
+# Start frontend (from client/)
+npm run dev
 ```
 
-### 4. Set up MongoDB Atlas Vector Search
+---
 
-After running the indexer for the first time:
-
-1. Go to your Atlas cluster → **Search Indexes**
-2. Click **Create Search Index** → **JSON Editor**
-3. Select your `chunks` collection and paste:
-
-```json
-{
-  "fields": [
-    {
-      "type": "vector",
-      "path": "embedding",
-      "numDimensions": 768,
-      "similarity": "cosine"
-    }
-  ]
-}
-```
-
-### 5. Set up GitHub PR webhook (optional)
+## 🧪 Testing & Validation
 
 ```bash
-# Install ngrok for local development
-npm install -g ngrok
-ngrok http 5000
-```
-
-Copy the ngrok URL → GitHub repo → **Settings → Webhooks → Add webhook**:
-- Payload URL: `https://your-ngrok-url.ngrok.io/webhook/github`
-- Content type: `application/json`
-- Secret: same as `GITHUB_WEBHOOK_SECRET` in your `.env`
-- Events: select **Pull requests**
-
----
-
-## API Reference
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Create account |
-| POST | `/api/auth/login` | Login, get JWT |
-| POST | `/api/repos/index` | Index a GitHub repo |
-| POST | `/api/chat` | RAG chat (SSE stream) |
-| POST | `/api/vision` | Screenshot → React code |
-| POST | `/webhook/github` | GitHub PR event receiver |
-
----
-
-## AI Concepts Used
-
-| Concept | Where | Description |
-|---------|-------|-------------|
-| **Embeddings** | Indexer + Retriever | Convert text to 768-dim vectors representing meaning |
-| **Vector search** | MongoDB $vectorSearch | Find semantically similar chunks via cosine similarity |
-| **RAG** | rag.js | Retrieve relevant context before generating answers |
-| **Prompt engineering** | All features | System prompts, few-shot examples, structured JSON output |
-| **Agentic workflow** | PR bot | Perceive → decide → act without human involvement |
-| **Structured outputs** | PR review | Force LLM to return machine-parseable JSON |
-| **Multimodal AI** | Vision feature | Image + text input to the same model |
-| **SSE streaming** | Chat + vision | Stream tokens to the browser in real-time |
-| **Speech AI** | Voice input | Browser STT chained into the RAG pipeline |
-
-
-
----
-
-## Free Tier Limits
-
-All services used have a free tier sufficient for a portfolio project:
-
-| Service | Free limit | Used for |
-|---------|-----------|----------|
-| Google AI Studio | 15 req/min | LLM + embeddings + vision |
-| MongoDB Atlas M0 | 512MB storage | Chunks + users |
-| Render.com | 750 hrs/month | Express server |
-| Vercel | Unlimited | React frontend |
-| Groq | Free tier | Whisper STT fallback |
-
-**Total monthly cost: ₹0**
-
----
-
-## Contributing
-
-Pull requests welcome. For major changes, open an issue first.
-
-```bash
-git checkout -b feature/your-feature
-git commit -m 'Add your feature'
-git push origin feature/your-feature
+# Run server unit and integration test suite
+cd server
+npm test
 ```
 
 ---
+
+## 🔌 API Reference
+
+### Authentication (`/api/auth`)
+| Method | Route | Description | Validation |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Register new user account | `registerSchema` (email, password, name) |
+| `POST` | `/api/auth/login` | Authenticate user & return JWT | `loginSchema` (email, password) |
+| `GET` | `/api/auth/me` | Fetch authenticated user profile | Bearer Token |
+| `POST` | `/api/auth/github-token` | Store encrypted GitHub token | `githubTokenSchema` |
+
+### Repositories (`/api/repos`)
+| Method | Route | Description | Validation |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/repos/indexed` | List user's indexed repositories | Bearer Token |
+| `POST` | `/api/repos/index` | Index GitHub repository | `indexRepoSchema` (url, model, exclusions) |
+| `POST` | `/api/repos/analyze` | Pre-index file tree analysis | `repoUrlSchema` |
+| `GET` | `/api/repos/status` | Polling endpoint for indexing progress | Query `url` |
+| `DELETE` | `/api/repos/delete` | Remove indexed repository data | `repoUrlSchema` |
+
+### AI & Chat (`/api/chat`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/chat` | Main RAG chat endpoint with Server-Sent Events (SSE) |
+| `POST` | `/api/chat/bug-trace` | Bug root-cause tracing with targeted AST context |
+| `POST` | `/api/chat/onboarding` | Architecture walkthrough generator for new repos |
+| `POST` | `/api/chat/pr-review` | Automated GitHub Pull Request code reviewer |
+| `GET` | `/api/chat/history` | Fetch conversation history for active repository |
+
+---
+
+## 📄 License
+This project is licensed under the [MIT License](LICENSE).

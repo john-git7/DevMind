@@ -4,14 +4,15 @@ import User from '../models/User';
 import Conversation from '../models/Conversation';
 import RepoStatus from '../models/RepoStatus';
 import { requireApiKey, AuthenticatedRequest } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { registerSchema, loginSchema, githubTokenSchema } from '../schemas/auth.schema';
 import { encrypt } from '../utils/crypto';
 
 const router = express.Router();
 
 // Register new user
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', validate(registerSchema), async (req: Request, res: Response) => {
   const { email, password, name } = req.body;
-  if (!email || !password || !name) return res.status(400).json({ error: 'All fields are required' });
 
   try {
     const existingUser = await User.findOne({ email });
@@ -43,9 +44,8 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 // Login user
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', validate(loginSchema), async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'All fields are required' });
 
   try {
     const user = await User.findOne({ email });
@@ -76,9 +76,8 @@ router.get('/me', requireApiKey as any, async (req: AuthenticatedRequest, res: R
 });
 
 // Save GitHub Token
-router.post('/github-token', requireApiKey as any, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/github-token', requireApiKey as any, validate(githubTokenSchema), async (req: AuthenticatedRequest, res: Response) => {
   const { githubToken } = req.body;
-  if (!githubToken) return res.status(400).json({ error: 'GitHub token is required' });
 
   try {
     const user = await User.findById(req.user.id);

@@ -30,13 +30,14 @@ describe('Auth Endpoints', () => {
       expect(res.body).toHaveProperty('error', 'User already exists');
     });
 
-    it('should fail if fields are missing', async () => {
+    it('should fail if fields are missing or invalid', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({ email: 'incomplete@example.com' });
       
       expect(res.statusCode).toBe(400);
-      expect(res.body).toHaveProperty('error', 'All fields are required');
+      expect(res.body).toHaveProperty('error', 'Validation failed');
+      expect(res.body).toHaveProperty('issues');
     });
   });
 

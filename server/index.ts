@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit';
 // Override local DNS to fix SRV lookup failures on this network
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
+import morgan from 'morgan';
 import usageTracker from './services/usageTracker';
 import { requireApiKey } from './middleware/auth';
 import authRoute from './routes/auth';
@@ -20,6 +21,13 @@ import RepoStatus from './models/RepoStatus';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// HTTP Request Logging
+if (process.env.NODE_ENV === 'production') {
+  app.use(morgan('combined'));
+} else if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
 
 // Middleware
 const allowedOrigins = process.env.CLIENT_URL
@@ -35,15 +43,21 @@ app.use(express.json({ limit: '50mb' }));
 // Auth routes (unprotected inside)
 app.use('/api/auth', authRoute);
 
+// Standardized production rate limiters
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 2000, // Increased from 50 to allow client polling
-  message: { error: 'Too many requests, slow down.' }
+  max: 300,
+  message: { error: 'Too many requests, slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200 // Increased from 20
+  max: 50,
+  message: { error: 'AI request limit reached. Please wait before generating more completions.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // GET health check — used by Render.com, UptimeRobot, and CI pipelines

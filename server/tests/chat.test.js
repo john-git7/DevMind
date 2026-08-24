@@ -7,7 +7,7 @@ describe('Chat Endpoints', () => {
   beforeEach(async () => {
     const regRes = await request(app)
       .post('/api/auth/register')
-      .send({ email: 'chat-tester@test.com', password: 'pw', name: 'Chat Tester' });
+      .send({ email: 'chat-tester@test.com', password: 'password123', name: 'Chat Tester' });
     token = regRes.body.token;
   });
 
