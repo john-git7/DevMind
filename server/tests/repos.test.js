@@ -7,7 +7,7 @@ describe('Repos Endpoints', () => {
   beforeEach(async () => {
     const regRes = await request(app)
       .post('/api/auth/register')
-      .send({ email: 'repo-tester@test.com', password: 'pw', name: 'Repo Tester' });
+      .send({ email: 'repo-tester@test.com', password: 'password123', name: 'Repo Tester' });
     token = regRes.body.token;
   });
 
