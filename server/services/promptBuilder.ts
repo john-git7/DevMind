@@ -49,17 +49,56 @@ Use Markdown with clear headers (##), bold text, and bullet points. Make it soun
 ${commitHistoryText}`;
 }
 
-export function buildPRReviewPrompt(prNumber: string | number, owner: string, repoName: string, prDiff: string, currentContext: string): string {
-  return `You are DevGrasp, an expert Code Reviewer.
+export interface PRMetadata {
+  title?: string;
+  author?: string;
+  baseBranch?: string;
+  headBranch?: string;
+  body?: string;
+  additions?: number;
+  deletions?: number;
+  changedFiles?: number;
+}
+
+export function buildPRReviewPrompt(
+  prNumber: string | number,
+  owner: string,
+  repoName: string,
+  prDiff: string,
+  currentContext: string,
+  metadata?: PRMetadata,
+  fileManifest?: string
+): string {
+  let prompt = `You are DevGrasp, an expert Code Reviewer.
 The user is asking you about Pull Request #${prNumber} in ${owner}/${repoName}.
-I am providing you with the unified diff of the PR, and the current state of the modified files in the main branch (to help check for merge conflicts or issues).
+You have access to the complete PR overview, the changed files manifest, the unified diff, and the current state of modified files in the main branch.`;
 
-### PR Unified Diff ###
-${prDiff.length > 20000 ? prDiff.substring(0, 20000) + '\\n...[DIFF TRUNCATED]' : prDiff}
+  if (metadata) {
+    prompt += `\n\n### PR Overview ###
+- **Title**: ${metadata.title || 'N/A'}
+- **Author**: ${metadata.author || 'N/A'}
+- **Branches**: ${metadata.headBranch || 'N/A'} -> ${metadata.baseBranch || 'main'}
+- **Total Changes**: +${metadata.additions ?? 0} / -${metadata.deletions ?? 0} (${metadata.changedFiles ?? 0} files)
+${metadata.body ? `\n**Description**:\n${metadata.body.substring(0, 2000)}` : ''}`;
+  }
 
-### Current Files in Main Branch (Context) ###
-${currentContext.length > 50000 ? currentContext.substring(0, 50000) + '\\n...[CONTEXT TRUNCATED]' : currentContext || 'No context found.'}
+  if (fileManifest) {
+    prompt += `\n\n### Changed Files Manifest ###\n${fileManifest}`;
+  }
 
-If the user asks "will it cause a merge conflict?", compare the Diff with the Current Files to see if they overlap in ways that Git cannot auto-merge.
-Always be helpful, specific, and cite file names or line numbers when possible.`;
+  const truncatedDiff = prDiff.length > 250000 
+    ? prDiff.substring(0, 250000) + '\n...[DIFF TRUNCATED - Showing first 250,000 characters]' 
+    : prDiff;
+
+  prompt += `\n\n### PR Unified Diff ###\n${truncatedDiff}`;
+
+  const truncatedContext = currentContext.length > 100000 
+    ? currentContext.substring(0, 100000) + '\n...[CONTEXT TRUNCATED]' 
+    : (currentContext || 'No context found.');
+
+  prompt += `\n\n### Current Files in Main Branch (Context) ###\n${truncatedContext}`;
+
+  prompt += `\n\nAlways provide complete, accurate, and specific reviews. Reference changed files and line numbers where appropriate. If asked about overall PR changes, refer to the full Changed Files Manifest even if specific diff sections were long. If asked about merge conflicts, compare the Diff with the Current Files.`;
+
+  return prompt;
 }

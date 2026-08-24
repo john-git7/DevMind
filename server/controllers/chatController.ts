@@ -421,27 +421,57 @@ export const prReview = async (req: AuthenticatedRequest, res: Response) => {
       throw new Error("Invalid format");
     }
 
-    res.write(`data: ${JSON.stringify({ status: 'Fetching PR details...' })}\n\n`);
+    res.write(`data: ${JSON.stringify({ status: 'Fetching PR details & files...' })}\n\n`);
     const userToken = await getUserToken(req.user?.id);
     const token = userToken || process.env.GITHUB_TOKEN;
     const octokit = new Octokit(token ? { auth: token } : {});
-    const diffRes: any = await octokit.rest.pulls.get({
-      owner, repo: repoName, pull_number: prNumber, mediaType: { format: 'diff' }
-    });
-    const prDiff = diffRes.data;
-    
+
+    const [prRes, filesRes, diffRes] = await Promise.all([
+      octokit.rest.pulls.get({ owner, repo: repoName, pull_number: prNumber }).catch(() => null),
+      octokit.rest.pulls.listFiles({ owner, repo: repoName, pull_number: prNumber, per_page: 100 }).catch(() => null),
+      octokit.rest.pulls.get({ owner, repo: repoName, pull_number: prNumber, mediaType: { format: 'diff' } }).catch(() => null)
+    ]);
+
+    const prDetails = prRes?.data;
+    const filesList = filesRes?.data || [];
+    let prDiff = (diffRes as any)?.data || '';
+
+    // Filter noisy lockfiles from unified diff if diff is large
+    if (typeof prDiff === 'string' && prDiff.length > 20000) {
+      prDiff = prDiff.replace(/diff --git a\/(package-lock\.json|yarn\.lock|pnpm-lock\.yaml)[\s\S]*?(?=(diff --git|$))/g, 'diff --git a/package-lock.json\n[Lockfile diff omitted for brevity]\n');
+    }
+
+    let fileManifest = '';
+    if (filesList.length > 0) {
+      fileManifest = filesList.map((f: any) => `- \`${f.filename}\` (${f.status}, +${f.additions}/-${f.deletions})`).join('\n');
+    }
+
     res.write(`data: ${JSON.stringify({ status: 'Fetching repository context...' })}\n\n`);
-    const filePaths = [...new Set([...prDiff.matchAll(/(?:\+\+\+ b\/|--- a\/)(.*)/g)].map((m: any) => m[1]))];
-    
+    let fullFilePaths = filesList.map((f: any) => f.filename);
+    if (fullFilePaths.length === 0 && typeof prDiff === 'string') {
+      fullFilePaths = [...new Set([...prDiff.matchAll(/(?:\+\+\+ b\/|--- a\/)(.*)/g)].map((m: any) => m[1]))];
+    }
+
     let currentContext = '';
-    if (filePaths.length > 0) {
-      const searchTokens = filePaths.map((p: any) => p.split(/[/]/).pop().replace(/[.*+?^${}()|[]]/g, '$&'));
-      if (searchTokens.length > 0) {
-         const searchRegex = new RegExp(`(${searchTokens.join('|')})$`, 'i');
-         const relatedChunks = await Chunk.find({ repoUrl, filePath: { $regex: searchRegex } }).limit(15);
-         for (const chunk of relatedChunks) {
-           currentContext += `### CURRENT MASTER FILE: ${chunk.filePath} ###\n${chunk.content}\n\n`;
-         }
+    if (fullFilePaths.length > 0) {
+      const relatedChunks = await Chunk.find({
+        repoUrl,
+        filePath: { $in: fullFilePaths }
+      }).limit(50);
+
+      for (const chunk of relatedChunks) {
+        currentContext += `### CURRENT MAIN FILE: ${chunk.filePath} ###\n${chunk.content}\n\n`;
+      }
+
+      if (relatedChunks.length === 0) {
+        const searchTokens = fullFilePaths.map((p: any) => p.split(/[/]/).pop().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        if (searchTokens.length > 0) {
+          const searchRegex = new RegExp(`(${searchTokens.join('|')})$`, 'i');
+          const fallbackChunks = await Chunk.find({ repoUrl, filePath: { $regex: searchRegex } }).limit(20);
+          for (const chunk of fallbackChunks) {
+            currentContext += `### CURRENT MAIN FILE: ${chunk.filePath} ###\n${chunk.content}\n\n`;
+          }
+        }
       }
     }
 
@@ -465,7 +495,18 @@ export const prReview = async (req: AuthenticatedRequest, res: Response) => {
       role: msg.role === 'assistant' ? 'model' : 'user', parts: [{ text: msg.content }]
     }));
 
-    const systemPrompt = buildPRReviewPrompt(prNumber, owner, repoName, prDiff, currentContext);
+    const prMetadata = prDetails ? {
+      title: prDetails.title,
+      author: prDetails.user?.login,
+      baseBranch: prDetails.base?.ref,
+      headBranch: prDetails.head?.ref,
+      body: prDetails.body,
+      additions: prDetails.additions,
+      deletions: prDetails.deletions,
+      changedFiles: prDetails.changed_files
+    } : undefined;
+
+    const systemPrompt = buildPRReviewPrompt(prNumber, owner, repoName, prDiff, currentContext, prMetadata, fileManifest);
 
     const chatInstance = model.startChat({
       history: [

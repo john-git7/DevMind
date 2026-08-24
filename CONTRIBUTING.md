@@ -1,10 +1,10 @@
-# Contributing to DevMind
+# Contributing to DevGrasp
 
-Thank you for your interest in contributing to DevMind! We welcome contributions from the community to help make codebases faster and easier to understand.
+Thank you for your interest in contributing to DevGrasp! We welcome contributions from the community to help make codebases faster and easier to understand.
 
 ---
 
-## 🛠️ Development Setup
+## Development Setup
 
 ### Prerequisites
 - **Node.js**: v18+ (v20+ recommended)
@@ -13,8 +13,8 @@ Thank you for your interest in contributing to DevMind! We welcome contributions
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/john-git7/DevMind.git
-cd DevMind
+git clone https://github.com/john-git7/DevGrasp.git
+cd DevGrasp
 ```
 
 ### 2. Configure Environment Variables
@@ -54,7 +54,7 @@ npm run dev
 
 ---
 
-## 🧪 Running Tests & Quality Checks
+## Running Tests & Quality Checks
 
 We use **Jest** and **Supertest** with an in-memory MongoDB server for testing.
 
@@ -69,10 +69,10 @@ npm run build
 
 ---
 
-## 📐 Project Structure
+## Project Structure
 
 ```
-DevMind/
+DevGrasp/
 ├── client/                 # React 18 + Vite + TypeScript frontend
 │   ├── src/
 │   │   ├── components/     # Reusable UI modals & chat messages
@@ -94,7 +94,7 @@ DevMind/
 
 ---
 
-## 📜 Pull Request Guidelines
+## Pull Request Guidelines
 
 1. Create a feature branch (`git checkout -b feat/my-feature`).
 2. Adhere to TypeScript strict typing (avoid `any` where possible).
@@ -104,5 +104,5 @@ DevMind/
 
 ---
 
-## ⚖️ License
-DevMind is open-source software licensed under the [MIT License](LICENSE).
+## License
+DevGrasp is open-source software licensed under the [MIT License](LICENSE).

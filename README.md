@@ -1,22 +1,22 @@
-# DevMind 🧠
+# DevGrasp
 
 > **AI-Powered Codebase Intelligence & Developer Assistant** — Ask questions about complex repositories, trace bugs with AST context, review pull requests, and explore codebases with grounded AI citations.
 
 ---
 
-## 🚀 Overview
+## Overview
 
-**DevMind** is a production-grade full-stack application built with TypeScript, React 18, Express, MongoDB Atlas Vector Search, and Google Gemini. It parses, indexes, and understands GitHub repositories to provide:
+**DevGrasp** is a production-grade full-stack application built with TypeScript, React 18, Express, MongoDB Atlas Vector Search, and Google Gemini. It parses, indexes, and understands GitHub repositories to provide:
 
-- 💬 **Codebase Chat with SSE Streaming**: Low-latency token-by-token streaming responses grounded in your repository's AST-extracted code chunks.
-- 🐛 **Bug Trace & Root-Cause Analysis**: Deep semantic search across function scopes and dependencies to pinpoint regressions.
-- 🔍 **Automated PR Reviews**: Summarizes code diffs, highlights breaking changes, and suggests production improvements.
-- 🎙️ **Voice-Enabled Interface**: Ask codebase questions using browser-native SpeechRecognition.
-- 🛡️ **End-to-End Type Safety & Observability**: Strict Zod schema validation, Sentry profiling, Morgan logging, and full Jest/Supertest test coverage.
+- **Codebase Chat with SSE Streaming**: Low-latency token-by-token streaming responses grounded in your repository's AST-extracted code chunks.
+- **Bug Trace & Root-Cause Analysis**: Deep semantic search across function scopes and dependencies to pinpoint regressions.
+- **Automated PR Reviews**: Summarizes code diffs, highlights breaking changes, and suggests production improvements.
+- **Voice-Enabled Interface**: Ask codebase questions using browser-native SpeechRecognition.
+- **End-to-End Type Safety & Observability**: Strict Zod schema validation, Sentry profiling, Morgan logging, and full Jest/Supertest test coverage.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## Architecture & Tech Stack
 
 ```
 ┌───────────────────────────────────────────────────────────┐
@@ -54,10 +54,10 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-DevMind/
+DevGrasp/
 ├── client/                     # React 18 + TypeScript frontend
 │   ├── src/
 │   │   ├── components/         # ChatMessage, RepoModal, FileViewerModal, SettingsModal
@@ -89,8 +89,8 @@ DevMind/
 
 ### 1. Clone & Configure
 ```bash
-git clone https://github.com/john-git7/DevMind.git
-cd DevMind
+git clone https://github.com/john-git7/DevGrasp.git
+cd DevGrasp
 ```
 
 ### 2. Backend Setup
@@ -119,7 +119,7 @@ npm run dev
 
 ---
 
-## 🧪 Testing & Validation
+## Testing & Validation
 
 ```bash
 # Run server unit and integration test suite
@@ -129,7 +129,7 @@ npm test
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 ### Authentication (`/api/auth`)
 | Method | Route | Description | Validation |
@@ -159,5 +159,5 @@ npm test
 
 ---
 
-## 📄 License
+## License
 This project is licensed under the [MIT License](LICENSE).
