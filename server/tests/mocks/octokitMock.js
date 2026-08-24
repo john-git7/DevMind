@@ -8,7 +8,9 @@ class Octokit {
       getTree: jest.fn().mockResolvedValue({ data: { tree: [] } })
     };
     this.pulls = {
-      list: jest.fn().mockResolvedValue({ data: [] })
+      list: jest.fn().mockResolvedValue({ data: [] }),
+      get: jest.fn().mockResolvedValue({ data: { title: 'Mock PR', body: 'PR description', user: { login: 'tester' } } }),
+      listFiles: jest.fn().mockResolvedValue({ data: [] })
     };
   }
 }
